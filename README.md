@@ -35,15 +35,30 @@ references/
 
 ## Installation
 
-### Claude Code
+ใช้ `scripts/install.sh` (แนะนำ — exclude `.git`, `.github`, ตัว installer เองให้อัตโนมัติ):
+
 ```bash
-cp -r . /path/to/aegisx-platform/.claude/skills/hospital-drug-inventory/
+# ติดตั้งใน project scope (.claude/skills/ ใน repo เป้าหมาย)
+./scripts/install.sh /path/to/aegisx-platform
+
+# ติดตั้งใน user scope (~/.claude/skills/) — ใช้ได้ทุก project
+./scripts/install.sh --user
+
+# ติดตั้งใน Claude Desktop
+./scripts/install.sh --desktop
 ```
 
-### Claude Desktop (MCP)
+หรือติดตั้งจาก GitHub โดยตรง:
+
 ```bash
-cp -r . /path/to/skills/user/hospital-drug-inventory/
+git clone git@github.com:aegisx-platform/hospital-drug-inventory-skill.git
+cd hospital-drug-inventory-skill
+./scripts/install.sh /path/to/aegisx-platform
 ```
+
+### Verify
+
+หลังติดตั้ง เปิด Claude Code ใน project แล้วถามคำถามที่มี keyword เช่น "ออกแบบ stock journal สำหรับคลังยา" — skill จะ activate อัตโนมัติจาก trigger words ใน `SKILL.md` frontmatter
 
 ## Key Business Rules
 
