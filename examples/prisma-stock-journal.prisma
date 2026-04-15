@@ -1,0 +1,39 @@
+// Append-only stock ledger (see references/patterns.md §1)
+// Never UPDATE StockJournal rows — insert a new row for every movement.
+
+enum MovementType {
+  RECEIVE
+  DISPENSE
+  TRANSFER
+  ADJUST
+  RETURN
+}
+
+enum Direction {
+  IN
+  OUT
+}
+
+model StockJournal {
+  id            String       @id @default(cuid())
+  hospitalId    String
+  drugId        String
+  warehouseId   String
+  lotId         String
+  movementType  MovementType
+  direction     Direction
+  quantity      Decimal      @db.Decimal(18, 4)
+  baseUnitId    String
+  referenceType String       // PO | REQUISITION | PRESCRIPTION | ADJUSTMENT
+  referenceId   String
+  createdBy     String
+  createdAt     DateTime     @default(now())
+
+  drug      DrugItem @relation(fields: [drugId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  lot       Lot       @relation(fields: [lotId], references: [id])
+
+  @@index([hospitalId, drugId, warehouseId, createdAt])
+  @@index([hospitalId, lotId])
+  @@index([referenceType, referenceId])
+}

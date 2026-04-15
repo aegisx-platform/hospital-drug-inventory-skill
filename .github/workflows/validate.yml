@@ -1,0 +1,28 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh
+      - name: Run skill validator
+        run: ./scripts/validate.sh
+      - name: Dry-run installer
+        run: |
+          mkdir -p /tmp/dry-run-target
+          ./scripts/install.sh /tmp/dry-run-target
+          test -f /tmp/dry-run-target/.claude/skills/hospital-drug-inventory/SKILL.md
+          test -f /tmp/dry-run-target/.claude/skills/hospital-drug-inventory/references/patterns.md
+          ! test -d /tmp/dry-run-target/.claude/skills/hospital-drug-inventory/.git
+          ! test -f /tmp/dry-run-target/.claude/skills/hospital-drug-inventory/scripts/install.sh
