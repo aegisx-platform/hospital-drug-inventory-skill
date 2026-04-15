@@ -8,6 +8,16 @@ references/workflows change in a way that breaks generated code,
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-04-15
+
+### Changed
+- Slimmed `SKILL.md` (6.2KB → ~3KB) for faster activation: moved Regulatory
+  Foundation detail to `references/regulatory-framework.md` and Workflow Quick
+  Reference to `references/patterns.md`. `SKILL.md` now holds only the
+  non-negotiable rules + router.
+- README: added CI/release/license badges, user-scope one-liner, pinned-tarball
+  install, and uninstall section.
+
 ## [1.0.0] - 2026-04-15
 
 ### Added

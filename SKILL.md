@@ -1,6 +1,6 @@
 ---
 name: hospital-drug-inventory
-version: 1.0.0
+version: 1.0.1
 description: >
   Comprehensive skill for building hospital drug inventory management systems covering the full
   pharmaceutical supply chain aligned with Thai MOPH regulations: drug selection (PTC/formulary),
@@ -19,63 +19,44 @@ description: >
 
 # Hospital Drug Inventory Management System
 
-ระบบบริหารจัดการคลังเวชภัณฑ์โรงพยาบาล สำหรับ AegisX Platform
-ออกแบบตามกรอบระเบียบกระทรวงสาธารณสุข พ.ศ. 2563
+ระบบบริหารจัดการคลังเวชภัณฑ์โรงพยาบาล — AegisX Platform
+ตามระเบียบ สธ. 2563 + เกณฑ์จริยธรรม 2564 + DMSIC + ประกาศ สธ. 2568
 
-## Architecture — 5 กระบวนการตามมาตรฐาน สธ.
+## 5-Stage Supply Chain
 
 ```
 Selection → Estimation → Procurement → Storage → Distribution
-คัดเลือก   ประมาณการ    จัดซื้อ       เก็บสำรอง  กระจาย
-PTC/บัญชี  3ปีย้อนหลัง   แผน→PR→PO→GR คลัง/FEFO  คลังย่อย→ผป.
+คัดเลือก   ประมาณการ    จัดซื้อ        เก็บสำรอง  กระจาย
+PTC/บัญชี  3ปีย้อนหลัง   แผน→PR→PO→GR  LOT/FEFO  คลังย่อย→ผป.
 ```
 
-### Regulatory Foundation (6 ชั้น)
-1. **พ.ร.บ.จัดซื้อจัดจ้าง 2560** + กฎกระทรวง 2563
-2. **ระเบียบ สธ. 2563** ว่าด้วยการบริหารจัดการด้านยาและเวชภัณฑ์ที่มิใช่ยา
-3. **เกณฑ์จริยธรรม 2564** (ราชกิจจานุเบกษา 15 พ.ค. 2564)
-4. **นโยบายพัฒนาประสิทธิภาพบริหารเวชภัณฑ์** (ตั้งแต่ 2542)
-5. **ระบบราคาอ้างอิง DMSIC** (อัพเดททุก 3-4 เดือน)
-6. **ประกาศ สธ. 2568** มาตรฐานข้อมูลบริหารเวชภัณฑ์ 5 แฟ้ม
+## Non-Negotiable Rules (โหลดทุก task)
 
-### Core Design Principles
-1. **Regulation-First** — ทุก workflow สอดคล้องระเบียบ สธ. 2563
-2. **Append-Only Ledger** — stock + budget เป็น journal
-3. **Separation of Duties** — ผู้จัดซื้อ ≠ ผู้ควบคุมคลัง (ข้อ 11)
-4. **Net Price Only** — ห้าม discount/rebate (ข้อ 15(2))
-5. **Generic Name Primary** — สั่งยาด้วยชื่อสามัญ (ข้อ 13)
-6. **FEFO + Real-time Stock**
-7. **Quarterly Accountability** — แผน vs จริง ทุกไตรมาส
-8. **Full Audit Trail**
+1. **Append-Only Ledger** — ไม่ UPDATE stock; insert journal + direction IN/OUT ใน base unit
+2. **Separation of Duties** — user เดียวกันมี PURCHASER + WAREHOUSE_KEEPER ไม่ได้ (ระเบียบ สธ. 2563 ข้อ 11)
+3. **Net Price Only** — ห้าม discount/rebate (เกณฑ์จริยธรรม 2564 ข้อ 15(2))
+4. **Generic Primary** — generic name แสดงก่อน trade name (ข้อ 13)
+5. **Multi-site Isolation** — ทุก query ต้องมี `hospitalId`
+6. **FEFO** — lot เลือกจาก `orderBy expiryDate asc`
+7. **DMSIC Reference Price** — alert เมื่อซื้อแพงกว่า
 
-### Tech Stack
-Angular 19 + Material v3 + Tailwind (`ax-` prefix) / Fastify + Prisma + PostgreSQL / multi-site `hospitalId`
+## Tech Stack
 
----
+Angular 19 + Material v3 + Tailwind (`ax-` prefix) / Fastify + Prisma + PostgreSQL / multi-tenant via `hospitalId`
 
-## Domain Reference Router
+## Reference Router
 
-อ่าน `SKILL.md` ก่อน → อ่านเฉพาะ reference ที่เกี่ยวข้อง (ไม่ต้องอ่านทั้งหมด)
+อ่านเฉพาะที่เกี่ยวข้อง ไม่ต้องอ่านทั้งหมด
 
-| Domain | File | เมื่อไหร่ควรอ่าน |
-|--------|------|------------------|
-| Regulatory Framework | `references/regulatory-framework.md` | กรอบกฎหมาย คกก. KPI 16 ตัว timeline แบบฟอร์ม |
-| Drug Master Data | `references/drug-master-data.md` | drug catalog, TMT, unit conversion, classification |
-| Budget & Procurement | `references/budget-procurement.md` | แผนจัดซื้อ PR/PO สัญญา จัดซื้อร่วม ราคาอ้างอิง |
+| Domain | File | อ่านเมื่อ |
+|--------|------|-----------|
+| Regulatory & Timeline | `references/regulatory-framework.md` | กฎหมาย 6 ชั้น, KPI 16 ตัว, ปฏิทินงบประมาณ, แบบฟอร์ม |
+| Drug Master | `references/drug-master-data.md` | TMT, GPU, unit conversion, ED/NED/VEN |
+| Budget & Procurement | `references/budget-procurement.md` | แผนจัดซื้อ, PR/PO, จัดซื้อร่วม, DMSIC reference price |
 | Warehouse & Receiving | `references/warehouse-receiving.md` | GR, lot/batch, stock adjustment |
-| Dispensing & Sub-Store | `references/dispensing-substore.md` | เบิกจ่าย จ่ายยาผู้ป่วย utilization |
-| DMSIC 5-File | `references/dmsic-5-file.md` | ส่ง 5 แฟ้ม (ประกาศ สธ. 2568) |
-| Prisma Schema | `references/prisma-schema.md` | data model, relations, enums |
-| **Code Patterns** | `references/patterns.md` | **Stock journal, unit conversion, FEFO, RBAC — อ่านก่อนเขียนโค้ด** |
+| Dispensing & Sub-Store | `references/dispensing-substore.md` | เบิกจ่าย, จ่ายยาผู้ป่วย, utilization |
+| DMSIC 5-File | `references/dmsic-5-file.md` | ส่ง 5 แฟ้มรายเดือน (ประกาศ สธ. 2568) |
+| Prisma Schema | `references/prisma-schema.md` | data model, enums, relations |
+| **Code Patterns** | `references/patterns.md` | **stock journal, FEFO, RBAC code — อ่านก่อนเขียนโค้ด** |
 
-## Workflow Quick Reference
-
-```
-1. คัดเลือก   PTC → บัญชียาร่วมจังหวัด → ED/NED/VEN → Generic name primary
-2. ประมาณการ  ข้อมูล 3 ปี → Min/Max → ราคาอ้างอิง DMSIC → วงเงิน
-3. จัดซื้อ    แผน → คกก. → สสจ. → e-GP → PR → PO (ราคาสุทธิ) → GR
-4. เก็บสำรอง  LOT/FEFO → คงคลัง ≤ 2 เดือน → ตรวจ stock สัปดาห์ → ผู้คลัง ≠ ผู้ซื้อ
-5. กระจาย    คลังใหญ่ → คลังย่อย → ผู้ป่วย → Utilization → รายงานไตรมาส
-```
-
-See `references/patterns.md` for stock-journal, unit-conversion, FEFO, RBAC, and anti-patterns.
+See `examples/` for ready-to-adapt Prisma/Fastify/Angular snippets.
