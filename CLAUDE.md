@@ -33,3 +33,26 @@ These come from `SKILL.md` and must be respected in any code Claude generates fr
 ## Distribution
 
 There is no build step, no test runner, no lint config. Validation = the skill loads cleanly into a target project at `.claude/skills/hospital-drug-inventory/` and `SKILL.md` activates on the documented Thai/English triggers.
+
+Run `./scripts/validate.sh` locally before committing. CI (`.github/workflows/validate.yml`) re-runs it + a dry-run `./scripts/install.sh /tmp/dry-run-target` on every push/PR to `main`.
+
+Bump version in two places when shipping: `SKILL.md` frontmatter `version:` AND `CHANGELOG.md`. Then `git tag -a vX.Y.Z -m "..." && git push origin main --tags`. SemVer rule: major = workflow/schema change that breaks generated code; minor = new reference/domain; patch = wording.
+
+## Session Progress (resume point)
+
+Last worked: 2026-04-15. Repo is **public** at `git@github.com:aegisx-platform/hospital-drug-inventory-skill` (remote `origin`, branch `main`).
+
+**Released:**
+- `v1.0.0` — initial standardized package (SKILL.md + 8 references + examples/ + scripts/ + LICENSE + CLAUDE.md + CHANGELOG.md + CI + .editorconfig). GitHub Release published by user.
+- `v1.0.1` — slimmed `SKILL.md` from 6186 → 4498 bytes (moved Regulatory Foundation and Workflow Quick Reference into references). README now has CI/release/license badges, user-scope one-liner, pinned-tarball install, uninstall section. **Tag pushed but GitHub Release for v1.0.1 not yet drafted — user should draft it using CHANGELOG §1.0.1 as notes.**
+
+**Outstanding (not done, low urgency):**
+1. Branch protection on `main` (Settings → Branches → require CI pass + PR review)
+2. `.github/ISSUE_TEMPLATE/` + `.github/PULL_REQUEST_TEMPLATE.md` + `CONTRIBUTING.md` (if accepting external PRs)
+3. Hosted `curl -fsSL .../install.sh | bash` one-liner — requires extracting installer to be standalone (currently it `rsync`s from the cloned repo root, so this needs a redesign where the script downloads the tarball itself)
+4. Draft GitHub Release for `v1.0.1`
+
+**Things to NOT redo next session:**
+- Don't re-add Regulatory Foundation detail back into `SKILL.md` — it lives in `references/regulatory-framework.md` now (intentional to keep activation fast).
+- Don't re-add `Common Patterns` code blocks to `SKILL.md` — they're in `references/patterns.md`.
+- The diagnostics complaints on `examples/*.ts` (missing `fastify`, `@angular/core` etc.) are expected — examples are snippets, not a standalone project. Don't try to "fix" them with tsconfig.
